@@ -7,10 +7,76 @@
 
 </head>
 <body>
-<div style="width: 80%"></div>
+<div 
+id="container" style="width: 100%"> 
+</div>
 <script>
+let svg = d3.selectAll('#container')
+        .append('svg')
+        .attr('width','100%')
+        .attr('height','100vw')
+        .attr('viewBox','0 0 1000 800')
+    .style('background-color','#f5f3f3');
+    let margins = 30;
+    let width = 500 - 2 * margins;
+    let height = 400 - 2 * margins;
 
+    const loadData = d3.csv("./data_sample.csv").then(d => {
+        let data = d.map(elem => {
+            console.log(d)
+            return {
+                date: new Date(elem.date),
+                estimated_cost: Number(elem.EstimatedCost),
+                raw_material: Number(elem.RawMaterial),
+                workmanship: Number(elem.Workmanship),
+                yearly_storage: Number(elem.YearlyStorage)
+
+            }
+        })
+        return data
+    });
+ loadData.then(data => {
+    let x = d3.scaleTime()
+            .domain(d3.extent(data, function(d) { return d.date; }))
+            .range([margins, width]);
+        let y1 = d3.scaleLinear()
+            .domain([0, d3.max(data, function(d) { return d.yearly_storage; })])
+            .range([height, margins]);
+        let y2 = d3.scaleLinear()
+            .domain([0, d3.max(data, function(d) { return d.estimated_cost; })])
+            .range([height, margins]);
+        let y3 = d3.scaleLinear()
+            .domain([0, d3.max(data, function(d) { return d.raw_material; })])
+            .range([height, margins]);
+let LineOne= d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y1(d.yearly_storage); });
+
+let LineTwo = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y2(d.estimated_cost); });
+
+let LineThree = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y3(d.raw_material); });
+        svg.append("path")
+    .data([data])
+    .attr("class", "line")
+    .attr("d", LineOne) 
+    .attr("stroke-linejoin",'round')
+    .attr("stroke-linecap",'round')
+    .attr("fill",'none')
+    .attr("stroke","purple")
+    .attr("stroke-width","3px")
+})
+svg.append("g")
+.attr("transform","translate("+'0'+"," + height + ")")
+.call(d3.axisBottom(x));
+
+svg.append("g")
+.attr("transform","translate("+ margins+"," + "0" + ")")
+.call(d3.axisLeft(y1));
+            //console.log(d)
 </script>
-</body> 
-    
+</body>
 </html>
